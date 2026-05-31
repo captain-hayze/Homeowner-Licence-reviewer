@@ -4,7 +4,9 @@ import ReviewerLayout from "../../../components/layouts/ReviewerLayout"
 import DocumentCard from "../../../components/reviews/DocumentCard"
 import CommentList from "../../../components/reviews/CommentList"
 import { Card, Row, Col } from "antd"
-import { useParams } from "next/navigation"
+import { useParams } from "next/navigation";
+import { fetcher, handleMutation } from "@/utils/axios";
+import useSWR from "swr";
 
 export default function ReviewDetailPage() {
   const { id } = useParams();
@@ -14,6 +16,13 @@ export default function ReviewDetailPage() {
   ];
 
   console.log({ id })
+  const { data, isLoading } = useSWR(`/license-review-requests/${id}`, fetcher);
+
+  const review: Review = React.useMemo(() => {
+    return data?.data || undefined;
+  }, [data]);
+
+  console.log({ review })
 
   return (
     <ReviewerLayout>

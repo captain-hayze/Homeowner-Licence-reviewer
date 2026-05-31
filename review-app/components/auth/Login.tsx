@@ -1,13 +1,44 @@
 "use client"
-import React from "react"
-import { Form, Input, Button } from "antd"
+import { Form, Input, Button, message } from "antd";
+import useSWRMutation from "swr/mutation";
+import { handleMutation } from "@/utils/axios";
+import { useAppStore } from "@/providers/store-provider";
+import { useRouter } from "next/navigation";
 
-export default function Login({ onLogin }: { onLogin?: () => void }) {
-  const [form] = Form.useForm()
+type LoginPayload = {
+  email: string;
+  password: string;
+}
 
-  const handleFinish = (values: Record<string, unknown>) => {
-    console.log("login", values)
-    if (onLogin) onLogin()
+export default function Login() {
+  const [form] = Form.useForm();
+  const { setUser, setToken, setIsAuthenticated } = useAppStore((state) => state);
+  const router = useRouter();
+
+  const { trigger, isMutating } = useSWRMutation(
+    "license-user/login",
+    handleMutation
+  );
+
+  const handleFinish = async (values: LoginPayload) => {
+	  if (!values) return;
+
+	  try {
+	    const res = await trigger(values);
+
+      setUser(res.data);
+      setToken(res.token);
+      setIsAuthenticated(true);
+
+      router.push("/dashboard"); // Redirect to dashboard after successful login
+	  
+	    if (res) {
+		    message.success("Login completed successfully");
+	    }
+	  } catch (error) {
+	    console.error(error);
+	    message.error("Failed to complete login. Please try again.");
+	  }
   }
 
   return (
@@ -21,7 +52,13 @@ export default function Login({ onLogin }: { onLogin?: () => void }) {
           <Input.Password placeholder="Password" />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={isMutating}
+            disabled={isMutating}
+          >
             Continue
           </Button>
         </Form.Item>

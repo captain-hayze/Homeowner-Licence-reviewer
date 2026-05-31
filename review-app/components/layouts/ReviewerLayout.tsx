@@ -12,7 +12,7 @@ export default function ReviewerLayout({ children }: { children: React.ReactNode
   return (
     <Layout className="min-h-screen">
       <div className="lg:block hidden">
-        <Sider width={220} className="bg-white border-r h-full">
+        <Sider width={220} className="bg-white border-r border-gray-300 h-full">
           <SideBar mode="vertical" />
         </Sider>
       </div>

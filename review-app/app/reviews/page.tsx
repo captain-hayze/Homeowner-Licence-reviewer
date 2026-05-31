@@ -4,16 +4,19 @@ import ReviewerLayout from "../../components/layouts/ReviewerLayout"
 import { Tabs, Table, Tag } from "antd"
 import { useRouter } from "next/navigation"
 import { ColumnsType } from "antd/lib/table";
-
-const data = new Array(8).fill(0).map((_, i) => ({
-  key: i,
-  id: `REV-${1000 + i}`,
-  address: `Property ${i + 1}`,
-  status: i % 3 === 0 ? "in-review" : i % 3 === 1 ? "requested" : "completed",
-}))
+import { fetcher, handleMutation } from "@/utils/axios";
+import useSWR from "swr";
 
 export default function ReviewsPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = React.useState("1");
+
+  const { data, isLoading } = useSWR("/license-review-requests/my-requests", fetcher);
+
+  const reviews: Review[] = React.useMemo(() => {
+    return data?.data || [];
+  }, [data]);
+
   const columns: ColumnsType<Review> = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Address", dataIndex: "address", key: "address" },
@@ -27,18 +30,20 @@ export default function ReviewsPage() {
     },
   ]
 
+
   const onRowClick = (record: Review) => {
     router.push(`/reviews/${record.id}`);
   }
 
   return (
     <ReviewerLayout>
-      <Tabs defaultActiveKey="1">
+      <Tabs defaultActiveKey={activeTab} onChange={setActiveTab}>
         <Tabs.TabPane tab="All" key="1">
           <Table
             columns={columns}
             rowClassName="cursor-pointer"
-            dataSource={data}
+            dataSource={reviews}
+            loading={isLoading}
             onRow={(data) => {
               return {
                 onClick: () => {
@@ -52,7 +57,8 @@ export default function ReviewsPage() {
           <Table
             rowClassName="cursor-pointer"
             columns={columns}
-            dataSource={data.filter((d) => d.key % 2 === 0)}
+            loading={isLoading}
+            dataSource={reviews}
             onRow={(data) => {
               return {
                 onClick: () => {
@@ -66,7 +72,8 @@ export default function ReviewsPage() {
           <Table
             rowClassName="cursor-pointer"
             columns={columns}
-            dataSource={data.filter((d) => d.status === "requested")}
+            loading={isLoading}
+            dataSource={reviews}
             onRow={(data) => {
               return {
                 onClick: () => {

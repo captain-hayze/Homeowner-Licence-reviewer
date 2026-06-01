@@ -1,9 +1,29 @@
 
+type HomeOwnerProject = {
+  id: string;
+  name: string;
+  publicId: string;
+}
+
+type ReviewComment = {
+  user: string;
+  text: string;
+}
+
+type ReviewDocument = {
+  id: string;
+  title: string;
+  src?: string;
+  comments: ReviewComment[];
+}
+
 type Review = {
   id: string;
   title: string;
-  address: string;
-  status: "in-review" | "requested" | "completed";
-  documents: Array<{ title: string; src?: string }>;
-  comments: Array<{ user: string; text: string }>;
+  createdAt: string;
+  updatedAt: string;
+  status: "ARCH_REVIEW" | "IN_REVIEW" | "COMPLETED";
+  documents: ReviewDocument[];
+  comments: ReviewComment[];
+  homeOwnerProject: HomeOwnerProject;
 }

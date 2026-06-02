@@ -12,18 +12,39 @@ type ReviewComment = {
 
 type ReviewDocument = {
   id: string;
+  licenseReviewPlanDocumentId: string;
   title: string;
-  src?: string;
+  documentUrl: string;
+  reviewStatus: 'ARCH_REVIEW' | 'IN_REVIEW' | 'COMPLETED' | 'STRUCT_REVIEW';
+  reuploadedAt: string | null;
+  reuploadRequestedAt: string | null;
+  reuploadRemark: string | null;
+  requiresReupload: boolean;
   comments: ReviewComment[];
+  planDocument: {
+    id: string;
+    title: string;
+  }
+}
+
+type Plan = {
+  id: string;
+  title: string;
+  price: string;
+  apprReviewerPercentage: string;
+  archReviewerPercentage: string;
+  structReviewerPercentage: string;
+  description: string;
 }
 
 type Review = {
   id: string;
   title: string;
-  createdAt: string;
-  updatedAt: string;
   status: "ARCH_REVIEW" | "IN_REVIEW" | "COMPLETED";
-  documents: ReviewDocument[];
+  reviewPlan: Plan;
+  requestDocuments: ReviewDocument[];
   comments: ReviewComment[];
   homeOwnerProject: HomeOwnerProject;
+  createdAt: string;
+  updatedAt: string;
 }

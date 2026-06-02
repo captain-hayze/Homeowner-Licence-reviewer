@@ -3,16 +3,17 @@ import React from "react"
 import ReviewerLayout from "../../../components/layouts/ReviewerLayout"
 import DocumentCard from "../../../components/reviews/DocumentCard"
 import CommentList from "../../../components/reviews/CommentList"
-import { Card, Row, Col, Skeleton } from "antd"
+import { Card, Row, Col, Skeleton, Button } from "antd"
 import { useParams } from "next/navigation";
 import { fetcher } from "@/utils/axios";
 import useSWR from "swr";
+import { CloseCircleOutlined } from "@ant-design/icons"
 
 export default function ReviewDetailPage() {
   const { id } = useParams();
   const [selectedDocument, setSelectedDocument] = React.useState<ReviewDocument | null>(null);
 
-  const { data, isLoading } = useSWR(`/license-review-user/${id}/assigned-review-request`, fetcher);
+  const { data, isLoading, mutate } = useSWR(`/license-review-user/${id}/assigned-review-request`, fetcher);
 
   const review: Review = React.useMemo(() => {
     return data?.data || undefined;
@@ -22,16 +23,20 @@ export default function ReviewDetailPage() {
     <ReviewerLayout>
       <Row gutter={16}>
         <Col span={selectedDocument ? 16 : 24}>
-          <Card title={`Review ${review?.homeOwnerProject?.publicId || ""}`}>
+          <Card title={`${review?.reviewPlan?.title || "Review Details"}`}>
             {isLoading
               ? <Skeleton />
               : (<>
+                 <p className="mb-6 text-gray-700">
+                  {review?.reviewPlan.description || "No description provided for this review."}
+                 </p>
                 <div className="space-y-3">
-                  {review?.documents.map((doc, idx) => (
+                  {review?.requestDocuments.map((doc, idx) => (
                     <DocumentCard
                       key={idx}
-                      onSelect={setSelectedDocument}
+                      onSelect={(document) => setSelectedDocument(document)}
                       reviewId={review.id}
+                      onApproved={mutate}
                       {...doc}
                     />
                   ))}
@@ -46,11 +51,25 @@ export default function ReviewDetailPage() {
         </Col>
         {selectedDocument && (
           <Col span={8}>
-            <Card title="Comments">
+            <Card
+              title="Comments"
+              extra={<Button
+                size="small"
+                icon={<CloseCircleOutlined className="text-lg!" />}
+                variant="text"
+                onClick={() => setSelectedDocument(null)}
+              />
+              }
+            >
               <CommentList
-                documentId={selectedDocument?.id}
+                documentId={selectedDocument?.licenseReviewPlanDocumentId}
                 reviewId={review?.id}
                 comments={selectedDocument.comments}
+                reuploadRemark={selectedDocument.reuploadRemark}
+                onReuploadRequest={(remark) => {
+                  mutate();
+                  setSelectedDocument((prev) => prev ? { ...prev, reuploadRemark: remark } : prev);
+                }}
               />
             </Card>
           </Col>

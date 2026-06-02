@@ -4,7 +4,8 @@ import { Form, Input, Button, message } from "antd"
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons"
 import { handleMutation } from "@/utils/axios";
 import UploadComponent from "@/components/ui/Upload";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAppStore } from "@/providers/store-provider";
 
 type Document = {
   name: string;
@@ -20,7 +21,12 @@ type OnboardingPayload = {
 
 export default function Onboarding() {
   const [form] = Form.useForm<OnboardingPayload>();
+  const { setUser, setToken, setIsAuthenticated } = useAppStore((state) => state);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+
+  console.log("Email from query params:", email);
 
   const { trigger, isMutating } = useSWRMutation(
     "license-user/complete-onboarding",
@@ -29,14 +35,7 @@ export default function Onboarding() {
 
 	// initial data provided by the user (show only the first document initially)
 	const initialPayload = {
-		// email: "faxixo1140@noyavip.com",
-		// password: "123456",
-		// documents: [
-		// 	{
-		// 		name: "Practicing License",
-		// 		url: "",
-		// 	},
-		// ],
+		email: email,
 	}
 
 	const onFinish = async (values: OnboardingPayload) => {
@@ -50,11 +49,14 @@ export default function Onboarding() {
 
 	  try {
 	    const res = await trigger(payload);
-	  
-	  if (res) {
-		message.success("Onboarding completed successfully");
-		router.push("/"); // Redirect to login after successful onboarding
-	  }
+		
+	    if (res) {
+		  setUser(res.data.user);
+		  setToken(res.data.authToken);
+		  setIsAuthenticated(true);
+		  message.success("Onboarding completed successfully");
+		  router.push("/dashboard"); // Redirect to dashboard after successful onboarding
+	    }
 	  } catch (error) {
 	   console.error(error);
 	   message.error("Failed to complete onboarding. Please try again.");
@@ -66,7 +68,7 @@ export default function Onboarding() {
 			<h2 className="text-2xl text-gray-950 font-semibold mb-4">Complete onboarding</h2>
 			<Form form={form} layout="vertical" onFinish={onFinish} initialValues={initialPayload}>
 				<Form.Item name="email" label="Email" rules={[{ required: true, message: "Please enter your email" }]}> 
-					<Input placeholder="Email" />
+					<Input placeholder="Email" disabled />
 				</Form.Item>
 
 				<Form.Item name="password" label="Set Password" rules={[{ required: true, message: "Please set a password" }]}> 

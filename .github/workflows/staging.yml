@@ -1,0 +1,69 @@
+name: Staging
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on pull request events but only for the staging branch
+  pull_request:
+    branches: [staging]
+    types: closed
+  push:
+    branches: [staging]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.13.1]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Use the node version specified in the strategy
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      # Install packages
+      - name: Install packages
+        run: |
+          yarn install
+
+      # Linter
+      - name: Linter
+        run: |
+          yarn lint
+
+      # Audit
+      - name: Dependency Audit
+        run: |
+          yarn audit
+
+      # Create a build
+      - name: Staging build
+        run: |
+          unset CI
+          yarn build:staging
+
+      # Deploy to the S3 server
+      - name: Deploy to S3
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_STAGING_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SOURCE_DIR: "out"

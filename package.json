@@ -1,11 +1,14 @@
 {
-  "name": "review-app",
+  "name": "homeowner-license-reviewer",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "build:staging": "env-cmd -f .env.staging next build",
+    "build:production": "env-cmd -f .env.production next build",
+    "export": "next export",
     "lint": "eslint"
   },
   "dependencies": {
@@ -14,9 +17,10 @@
     "axios": "^1.16.1",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.21",
-    "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "env-cmd": "^11.0.0",
+    "next": "^16.2.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "swr": "^2.4.1",
     "zustand": "^5.0.14"
   },
@@ -30,5 +34,8 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "^8.5.15"
   }
 }

@@ -53,7 +53,7 @@ export default function ReviewsPage() {
 
 
   const onRowClick = (record: Review) => {
-    router.push(`/reviews/${record.id}`);
+    router.push(`/reviews/review/?id=${record.id}`);
   }
 
   return (

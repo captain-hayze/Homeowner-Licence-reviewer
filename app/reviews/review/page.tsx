@@ -4,13 +4,14 @@ import ReviewerLayout from "../../../components/layouts/ReviewerLayout"
 import DocumentCard from "../../../components/reviews/DocumentCard"
 import CommentList from "../../../components/reviews/CommentList"
 import { Card, Row, Col, Skeleton, Button } from "antd"
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { fetcher } from "@/utils/axios";
 import useSWR from "swr";
-import { CloseCircleOutlined } from "@ant-design/icons"
+import { CloseCircleOutlined } from "@ant-design/icons";
 
 export default function ReviewDetailPage() {
-  const { id } = useParams();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') || '';
   const [selectedDocument, setSelectedDocument] = React.useState<ReviewDocument | null>(null);
 
   const { data, isLoading, mutate } = useSWR(`/license-review-user/${id}/assigned-review-request`, fetcher);

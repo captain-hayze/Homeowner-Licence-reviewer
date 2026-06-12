@@ -1,6 +1,10 @@
-"use client"
-import React from "react"
-import Onboarding from "../../components/auth/Onboarding"
+'use client';
+
+import dynamic from 'next/dynamic';
+ 
+const Onboarding = dynamic(
+  () => import('@/components/auth/Onboarding'),
+  { ssr: false })
 
 export default function OnboardingPage() {
   return (

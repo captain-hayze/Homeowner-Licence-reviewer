@@ -26,8 +26,6 @@ export default function Onboarding() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
 
-  console.log("Email from query params:", email);
-
   const { trigger, isMutating } = useSWRMutation(
     "license-user/complete-onboarding",
     handleMutation
